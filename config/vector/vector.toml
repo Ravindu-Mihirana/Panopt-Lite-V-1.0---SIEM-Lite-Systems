@@ -1,0 +1,16 @@
+[api]
+enabled = true
+address = "0.0.0.0:8383"
+
+[sources.stdin]
+type = "stdin"
+
+[sinks.loki]
+type = "loki"
+inputs = ["stdin"]
+endpoint = "http://loki:3100"
+encoding.codec = "json"
+labels.source = "container-stdin"
+endpoint = "http://loki:3100"
+encoding.codec = "json"
+labels.source = "vector-demo"

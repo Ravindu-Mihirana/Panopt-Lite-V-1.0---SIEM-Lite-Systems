@@ -1,0 +1,53 @@
+networks:
+  panopt-net:
+
+
+services:
+  loki:
+    image: grafana/loki:latest
+    container_name: panopt-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./config/loki/loki-config.yaml:/etc/loki/local-config.yaml
+    networks:
+      - panopt-net
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: panopt-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+      - ./config/grafana/dashboards:/etc/grafana/dashboards
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    networks:
+      - panopt-net
+    restart: unless-stopped
+
+  vector:
+    image: timberio/vector:latest-alpine
+    container_name: panopt-vector
+    volumes:
+      - ./config/vector/vector.toml:/etc/vector/vector.toml:ro
+    command: --config /etc/vector/vector.toml
+    ports:
+      - "8383:8383" # Vector API
+      - "9000:9000" # Vector Prom Exporter
+    networks:
+      - panopt-net
+    restart: unless-stopped
+
+  anomaly-engine:
+    build: ./anomaly_engine
+    container_name: panopt-anomaly-engine
+    networks:
+      - panopt-net
+    depends_on:
+      - loki
+    restart: unless-stopped

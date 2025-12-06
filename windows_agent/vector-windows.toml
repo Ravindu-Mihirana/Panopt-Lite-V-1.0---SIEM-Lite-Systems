@@ -1,0 +1,17 @@
+[sources.host_metrics]
+type = "host_metrics"
+scrape_interval_secs = 10  # Collect every 10 seconds (Very low resource usage)
+
+# Transform: Convert Metric -> Log (so we can see it in Loki)
+[transforms.metrics_to_logs]
+type = "metric_to_log"
+inputs = ["host_metrics"]
+# metric_tag_values = "full" # Optional: default is usually fine
+
+[sinks.loki_local]
+type = "loki"
+inputs = ["metrics_to_logs"]
+endpoint = "http://localhost:3100"
+encoding.codec = "json"
+labels.source = "windows-host"
+labels.job = "metrics"
