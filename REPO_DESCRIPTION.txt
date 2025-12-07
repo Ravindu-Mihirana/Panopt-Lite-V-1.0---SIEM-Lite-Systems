@@ -1,0 +1,10 @@
+Panopt Lite is a lightweight, containerized SIEM (Security Information and Event Management) system designed for real-time monitoring and anomaly detection. 
+
+**Key Features:**
+*   **Real-Time Dashboard**: Visualizes CPU, RAM, and Security Alerts via Grafana.
+*   **AI-Powered Security**: Custom Python Engine using Isolation Forest & Linear Regression to detect anomalies and forecast resource exhaustion.
+*   **Cross-Platform Agents**: Lightweight log collectors for Windows, Linux, Android, and iOS.
+*   **Determininstic Alerting**: Loki Ruler integration for detecting known attack signatures.
+*   **Self-Hosted**: Built on Docker, Vector, Loki, and Grafana. No cloud dependencies required.
+
+Perfect for home labs, small servers, or IoT fleet monitoring as a modern, privacy-first alternative to heavy enterprise SIEMs.
