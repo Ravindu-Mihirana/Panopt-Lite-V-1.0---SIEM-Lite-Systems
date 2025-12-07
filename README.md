@@ -42,6 +42,34 @@ cd windows_agent
 .\start-agent.ps1
 ```
 
+### 3. Start the Agent (Linux)
+1. Open Terminal.
+2. Navigate to `linux_agent`.
+3. Run the installer:
+```bash
+cd linux_agent
+chmod +x install.sh
+./install.sh
+```
+
+### 4. Start the Agent (Android via Termux)
+1. Install **Termux** from F-Droid.
+2. Transfer the `android_agent` folder to your device.
+3. Update `vector.toml` with your Server's IP address.
+4. Run:
+```bash
+cd android_agent
+pkg install curl tar -y
+chmod +x install_termux.sh
+./install_termux.sh
+```
+
+### 5. Start the Agent (iOS via Python)
+1. Install **Pythonista** or **Pyto** app.
+2. Copy `ios_agent/agent.py` to your device.
+3. Edit the script to set `SERVER_IP` to your Server's IP address.
+4. Run the script inside the app.
+
 ## 📂 Project Structure
 ```
 .
