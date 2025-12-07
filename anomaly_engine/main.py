@@ -2,111 +2,142 @@ import time
 import logging
 import requests
 import pandas as pd
-from sklearn.ensemble import IsolationForest 
+import numpy as np
+from sklearn.ensemble import IsolationForest
+from sklearn.linear_model import LinearRegression
 import json
+import re
 
 # Configuration
 LOKI_URL = "http://loki:3100/loki/api/v1/query_range"
-QUERY = '{job="metrics"}' 
+LOKI_PUSH = "http://loki:3100/loki/api/v1/push"
 POLL_INTERVAL = 60  # seconds
 
+# Alerting Thresholds
+DISK_FORECAST_DAYS = 2
+THREAT_API_KEY = "YOUR_ABUSEIPDB_KEY_HERE"  # User to update this
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("PanoptEngine")
 
-def fetch_logs():
-    """
-    Fetch logs from Loki for the last 1 minute.
-    """
-    try:
-        # Get current time in nanoseconds
-        end_time_ns = int(time.time() * 1e9)
-        start_time_ns = end_time_ns - (POLL_INTERVAL * 1e9)
+class PanoptAI:
+    def __init__(self):
+        self.iso_forest = IsolationForest(contamination=0.05, random_state=42)
+        self.threat_cache = set(["192.168.1.200", "10.0.0.99"]) # Example bad IPs
+        self.last_forecast_time = 0
+
+    def fetch_logs(self, query, lookback_minutes=1, limit=5000):
+        try:
+            end_time_ns = int(time.time() * 1e9)
+            start_time_ns = end_time_ns - (lookback_minutes * 60 * 1e9)
+            params = {'query': query, 'start': start_time_ns, 'end': end_time_ns, 'limit': limit}
+            res = requests.get(LOKI_URL, params=params)
+            res.raise_for_status()
+            return res.json()
+        except Exception as e:
+            logger.error(f"Fetch Error: {e}")
+            return None
+
+    def push_alert(self, msg, level="warn", job="ai_alert"):
+        """Push alert back to Loki"""
+        try:
+            payload = {
+                "streams": [{
+                    "stream": {"source": "panopt-ai", "job": job, "level": level},
+                    "values": [[str(int(time.time() * 1e9)), msg]]
+                }]
+            }
+            requests.post(LOKI_PUSH, json=payload)
+        except Exception as e:
+            logger.error(f"Alert Push Error: {e}")
+
+    def detect_anomalies(self):
+        """Standard Host Metrics Anomaly Detection"""
+        data = self.fetch_logs('{job="metrics"}')
+        if not data: return
+
+        features = []
+        for stream in data.get('data', {}).get('result', []):
+            for val in stream['values']:
+                try:
+                    record = json.loads(val[1])
+                    # Extract numeric value (Gauge or Counter)
+                    v = None
+                    if 'gauge' in record: v = record['gauge']['value']
+                    elif 'counter' in record: v = record['counter']['value']
+                    
+                    if v is not None: features.append([float(v)])
+                except: continue
         
-        params = {
-            'query': QUERY,
-            'start': int(start_time_ns),
-            'end': int(end_time_ns),
-            'limit': 5000
-        }
+        if not features: return
+
+        # Train & Predict
+        df = pd.DataFrame(features, columns=['val'])
+        self.iso_forest.fit(df)
+        df['anomaly'] = self.iso_forest.predict(df)
         
-        response = requests.get(LOKI_URL, params=params)
-        response.raise_for_status()
-        return response.json()
-    except Exception as e:
-        logger.error(f"Error fetching logs from Loki: {e}")
-        return None
+        anomalies = df[df['anomaly'] == -1]
+        if not anomalies.empty:
+            msg = f"🧠 AI Detect: {len(anomalies)} metric anomalies detected (Spikes/Drops)."
+            logger.warning(msg)
+            self.push_alert(msg, level="warning")
+        else:
+            logger.info(f"Analyzed {len(features)} metrics. System nominal.")
 
-def analyze_logs(log_data):
-    """
-    Analyze host metrics (CPU/Memory) for anomalies using Isolation Forest.
-    """
-    if not log_data or 'data' not in log_data or 'result' not in log_data['data']:
-        return
+    def forecast_disk_usage(self):
+        """Linear Regression to predict Disk Full"""
+        # Run forecast every hour, not every minute
+        if time.time() - self.last_forecast_time < 3600: return
+        self.last_forecast_time = time.time()
 
-    results = log_data['data']['result']
-    if not results:
-        logger.info("No metrics found in the last interval.")
-        return
+        # Fetch last 6 hours of disk usage
+        data = self.fetch_logs('{job="metrics"} | json | name="filesystem_usage_percent"', lookback_minutes=360)
+        if not data: return
+        
+        points = []
+        for stream in data.get('data', {}).get('result', []):
+            for val in stream['values']:
+                try:
+                    ts = int(val[0]) / 1e9
+                    record = json.loads(val[1])
+                    usage = record['gauge']['value'] 
+                    points.append([ts, usage])
+                except: continue
+        
+        if len(points) < 50: return # Not enough data
 
-    # Extract features: host_cpu_usage percent
-    features = []
-    
-    for stream in results:
-        for value in stream['values']:
-            # value[1] is the JSON log line
-            try:
-                # The log line is a JSON string like {"name": "host_cpu_usage", "val": 12.5, ...}
-                record = json.loads(value[1])
-                
-                # Filter for Memory metric (Gauge) which oscillates and is good for anomaly detection
-                # Windows Vector typically sends 'memory_available_bytes' or similar.
-                name = record.get('name', '')
-                
-                # Check for Gauge value (Memory, Disk Space, etc)
-                if 'gauge' in record:
-                    val = record['gauge'].get('value')
-                # Fallback to Counter (CPU) - though less ideal for stateless stats
-                elif 'counter' in record:
-                    val = record['counter'].get('value')
-                else:
-                    val = None
+        df = pd.DataFrame(points, columns=['ts', 'usage'])
+        X = df[['ts']].values
+        y = df['usage'].values
+        
+        full_model = LinearRegression()
+        full_model.fit(X, y)
+        
+        # Predict 2 days from now
+        future_ts = time.time() + (DISK_FORECAST_DAYS * 86400)
+        prediction = full_model.predict([[future_ts]])[0]
+        
+        if prediction >= 95.0:
+            msg = f"🔮 FORECAST: Disk usage predicted to hit {prediction:.1f}% in {DISK_FORECAST_DAYS} days!"
+            logger.warning(msg)
+            self.push_alert(msg, level="critical", job="forecasting")
+        else:
+            logger.info(f"Forecast: Disk usage predicted to be {prediction:.1f}% in 48h.")
 
-                if val is not None:
-                     # Add to features. We can also add just memory specific ones.
-                     features.append([float(val)])
+    def scan_threats(self):
+        """Scan logs for bad IPs"""
+        # Fetch logs that might contain IPs (e.g., failed logins, web requests) - simulated here
+        # In real world: '{job="syslog"} |= "Failed password"'
+        # For Demo: We scan the 'demo_logs' if they exist, or just check metrics hostnames
+        pass # Placeholder for Phase 2 implementation
 
-            except json.JSONDecodeError:
-                continue
-    
-    if not features:
-        return
-
-    logger.info(f"Fetched {len(features)} CPU metric points. Checking for anomalies...")
-    
-    # Train Isolation Forest on CPU usage
-    # Higher contamination because spikes are common? Or keep low?
-    df = pd.DataFrame(features, columns=['cpu_usage'])
-    model = IsolationForest(contamination=0.05, random_state=42)
-    model.fit(df)
-    
-    # Predict (-1 is anomaly, 1 is normal)
-    predictions = model.predict(df)
-    df['anomaly'] = predictions
-    
-    anomalies = df[df['anomaly'] == -1]
-    
-    if not anomalies.empty:
-        max_anomaly = anomalies['cpu_usage'].max()
-        logger.warning(f"⚠️ DETECTED {len(anomalies)} CPU SPIKES. Max Usage: {max_anomaly:.2f}%")
-    else:
-        logger.info("System Normal: CPU usage within expected range.")
-
-def main():
-    logger.info("Starting Panopt Lite Anomaly Engine...")
-    while True:
-        data = fetch_logs()
-        analyze_logs(data)
-        time.sleep(POLL_INTERVAL)
+    def run(self):
+        logger.info("Starting Multi-Modal AI Engine...")
+        while True:
+            self.detect_anomalies()
+            self.forecast_disk_usage()
+            time.sleep(POLL_INTERVAL)
 
 if __name__ == "__main__":
-    main()
+    engine = PanoptAI()
+    engine.run()

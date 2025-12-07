@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panopt Lite - SIEM Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00F0FF;
+            --secondary: #7000FF;
+            --bg: #050510;
+            --text: #ffffff;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            background: radial-gradient(circle at top right, #1a0b2e 0%, var(--bg) 60%);
+        }
+
+        /* Animated Background */
+        .orb {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(45deg, var(--secondary), var(--primary));
+            filter: blur(100px);
+            opacity: 0.3;
+            border-radius: 50%;
+            z-index: -1;
+            animation: float 10s ease-in-out infinite;
+        }
+
+        .orb:nth-child(1) {
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb:nth-child(2) {
+            bottom: -100px;
+            right: -100px;
+            background: linear-gradient(45deg, #FF0055, #7000FF);
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(30px, 50px);
+            }
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 900px;
+            padding: 2rem;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 5rem;
+            font-weight: 800;
+            margin: 0;
+            line-height: 1.1;
+            background: linear-gradient(to right, #fff, #b4b4b4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #8892b0;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 1.2rem 3.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--bg);
+            background: var(--primary);
+            border: none;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transform: translateX(-100%);
+            transition: 0.5s;
+        }
+
+        .btn:hover::before {
+            transform: translateX(100%);
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 240, 255, 0.6);
+            background: #fff;
+        }
+
+        .stats {
+            margin-top: 5rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            perspective: 1000px;
+        }
+
+        .stat-item {
+            background: var(--glass);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .stat-val {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #a8b2d1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="orb"></div>
+    <div class="orb"></div>
+
+    <div class="container">
+        <h1>PANOPT LITE</h1>
+        <p class="subtitle">AI-Driven Threat Intelligence</p>
+
+        <a href="http://localhost:3000" class="btn">ENTER MISSION CONTROL</a>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-val">ACTIVE</span>
+                <span class="stat-label">System Status</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-val">SECURE</span>
+                <span class="stat-label">AI Guardrails</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-val">LIVE</span>
+                <span class="stat-label">Data Ingestion</span>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

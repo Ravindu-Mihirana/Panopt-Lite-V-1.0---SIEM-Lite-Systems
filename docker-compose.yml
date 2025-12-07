@@ -11,6 +11,7 @@ services:
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
       - ./config/loki/loki-config.yaml:/etc/loki/local-config.yaml
+      - ./config/loki/rules:/etc/loki/rules
     networks:
       - panopt-net
     restart: unless-stopped
@@ -24,8 +25,11 @@ services:
       - ./config/grafana/provisioning:/etc/grafana/provisioning
       - ./config/grafana/dashboards:/etc/grafana/dashboards
     environment:
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=panopt_secure
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/dashboards/mission_control.json
     networks:
       - panopt-net
     restart: unless-stopped

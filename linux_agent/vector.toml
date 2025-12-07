@@ -1,0 +1,15 @@
+[sources.host_metrics]
+type = "host_metrics"
+scrape_interval_secs = 10
+
+[transforms.metrics_to_logs]
+type = "metric_to_log"
+inputs = ["host_metrics"]
+
+[sinks.loki_local]
+type = "loki"
+inputs = ["metrics_to_logs"]
+endpoint = "http://localhost:3100"  # Update this to remote IP if not running locally
+encoding.codec = "json"
+labels.source = "linux-host"
+labels.job = "metrics"
