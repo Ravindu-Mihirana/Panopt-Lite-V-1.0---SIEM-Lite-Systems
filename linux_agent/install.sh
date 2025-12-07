@@ -20,8 +20,18 @@ curl -L $URL -o vector.tar.gz
 
 echo "Extracting..."
 mkdir -p bin
-tar -xzf vector.tar.gz -C bin --strip-components=2
-rm vector.tar.gz
+tar -xzf vector.tar.gz
+# Find the extracted 'vector' binary directory (it usually has a version number)
+EXTRACTED_DIR=$(find . -maxdepth 1 -type d -name "vector-*-linux-musl" | head -n 1)
+
+if [ -z "$EXTRACTED_DIR" ]; then
+    echo "Error: Could not find extracted directory."
+    exit 1
+fi
+
+echo "Found extracted directory: $EXTRACTED_DIR"
+mv "$EXTRACTED_DIR/bin/vector" bin/vector
+rm -rf "$EXTRACTED_DIR" vector.tar.gz
 
 echo "Starting Vector..."
 chmod +x bin/vector
