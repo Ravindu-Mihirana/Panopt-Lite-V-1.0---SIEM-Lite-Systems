@@ -1,0 +1,71 @@
+name: Panopt Lite CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Validate docker-compose.yml
+      run: |
+        docker-compose config
+        
+    - name: Build Anomaly Engine
+      run: |
+        docker-compose build anomaly-engine
+        
+    - name: Test Docker Compose
+      run: |
+        echo "Docker Compose validation passed!"
+        
+  python-lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8
+        cd anomaly_engine
+        pip install -r requirements.txt
+        
+    - name: Lint with flake8
+      run: |
+        # Stop build if there are Python syntax errors or undefined names
+        flake8 anomaly_engine --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Treat all other errors as warnings
+        flake8 anomaly_engine --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
+  documentation:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check documentation files exist
+      run: |
+        test -f README.md || exit 1
+        test -f INSTALLATION.md || exit 1
+        test -f TODO.md || exit 1
+        test -f docker-compose.yml || exit 1
+        echo "All required documentation files present!"
