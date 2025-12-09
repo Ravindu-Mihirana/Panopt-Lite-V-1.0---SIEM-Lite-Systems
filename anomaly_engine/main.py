@@ -82,7 +82,10 @@ class PanoptAI:
             logger.warning(msg)
             self.push_alert(msg, level="warning")
         else:
-            logger.info(f"Analyzed {len(features)} metrics. System nominal.")
+            msg = f"✅ AI Scan: Analyzed {len(features)} metrics. System nominal."
+            logger.info(msg)
+            # Optional: push 'info' level to Loki so dashboard shows activity
+            self.push_alert(msg, level="info")
 
     def forecast_disk_usage(self):
         """Linear Regression to predict Disk Full"""
@@ -125,17 +128,53 @@ class PanoptAI:
             logger.info(f"Forecast: Disk usage predicted to be {prediction:.1f}% in 48h.")
 
     def scan_threats(self):
-        """Scan logs for bad IPs"""
-        # Fetch logs that might contain IPs (e.g., failed logins, web requests) - simulated here
-        # In real world: '{job="syslog"} |= "Failed password"'
-        # For Demo: We scan the 'demo_logs' if they exist, or just check metrics hostnames
-        pass # Placeholder for Phase 2 implementation
+        """Scan logs for bad IPs using AbuseIPDB"""
+        if THREAT_API_KEY == "YOUR_ABUSEIPDB_KEY_HERE":
+            return  # Skip if API key not configured
+        
+        # Fetch logs that might contain IPs
+        data = self.fetch_logs('{job="metrics"} |~ "\\\\d+\\\\.\\\\d+\\\\.\\\\d+\\\\.\\\\d+"', lookback_minutes=5)
+        if not data: return
+        
+        import re
+        ip_pattern = re.compile(r'\b(?:\d{1,3}\.){3}\d{1,3}\b')
+        
+        checked_ips = set()
+        for stream in data.get('data', {}).get('result', []):
+            for val in stream['values']:
+                try:
+                    log_line = val[1]
+                    ips = ip_pattern.findall(log_line)
+                    
+                    for ip in ips:
+                        if ip in checked_ips or ip.startswith('127.') or ip.startswith('192.168.'):
+                            continue
+                        checked_ips.add(ip)
+                        
+                        # Check against AbuseIPDB
+                        headers = {'Key': THREAT_API_KEY, 'Accept': 'application/json'}
+                        params = {'ipAddress': ip, 'maxAgeInDays': '90'}
+                        
+                        try:
+                            res = requests.get('https://api.abuseipdb.com/api/v2/check', 
+                                             headers=headers, params=params, timeout=5)
+                            if res.status_code == 200:
+                                result = res.json()['data']
+                                if result['abuseConfidenceScore'] > 50:
+                                    msg = f"🚨 THREAT DETECTED: IP {ip} (Abuse Score: {result['abuseConfidenceScore']}%)"
+                                    logger.warning(msg)
+                                    self.push_alert(msg, level="critical", job="threat_intel")
+                        except Exception as e:
+                            logger.error(f"AbuseIPDB API Error: {e}")
+                            
+                except: continue
 
     def run(self):
         logger.info("Starting Multi-Modal AI Engine...")
         while True:
             self.detect_anomalies()
             self.forecast_disk_usage()
+            self.scan_threats()
             time.sleep(POLL_INTERVAL)
 
 if __name__ == "__main__":

@@ -16,22 +16,24 @@
             --border: rgba(255, 255, 255, 0.1);
         }
 
-        body {
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-x: hidden;
             background: radial-gradient(circle at top right, #1a0b2e 0%, var(--bg) 60%);
         }
 
         /* Animated Background */
         .orb {
-            position: absolute;
+            position: fixed;
             width: 400px;
             height: 400px;
             background: linear-gradient(45deg, var(--secondary), var(--primary));
@@ -45,7 +47,6 @@
         .orb:nth-child(1) {
             top: -100px;
             left: -100px;
-            animation-delay: 0s;
         }
 
         .orb:nth-child(2) {
@@ -67,23 +68,101 @@
             }
         }
 
-        .container {
-            text-align: center;
-            width: 100%;
-            max-width: 900px;
-            padding: 2rem;
-            z-index: 10;
+        /* Navigation Tabs */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 2rem 0 1rem;
+            flex-wrap: wrap;
         }
 
-        h1 {
-            font-size: 5rem;
+        .tab-btn {
+            padding: 0.8rem 2rem;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: var(--bg);
+            border-color: var(--primary);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Home Tab Styles */
+        .logo-container {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .logo {
+            font-size: 6rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .title {
+            font-size: 4rem;
             font-weight: 800;
-            margin: 0;
-            line-height: 1.1;
             background: linear-gradient(to right, #fff, #b4b4b4);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 0.5rem;
         }
 
         .subtitle {
@@ -91,13 +170,54 @@
             color: #8892b0;
             letter-spacing: 2px;
             text-transform: uppercase;
-            margin-bottom: 3rem;
             font-weight: 300;
         }
 
-        .btn {
+        /* Features Grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            background: var(--glass);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .feature-card p {
+            color: #a8b2d1;
+            font-size: 0.95rem;
+        }
+
+        /* CTA Button */
+        .cta-button {
             display: inline-flex;
             align-items: center;
+            gap: 1rem;
             padding: 1.2rem 3.5rem;
             font-size: 1.1rem;
             font-weight: 600;
@@ -108,57 +228,36 @@
             text-decoration: none;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
-            position: relative;
-            overflow: hidden;
+            margin: 2rem auto;
+            display: flex;
+            justify-content: center;
+            width: fit-content;
         }
 
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transform: translateX(-100%);
-            transition: 0.5s;
-        }
-
-        .btn:hover::before {
-            transform: translateX(100%);
-        }
-
-        .btn:hover {
+        .cta-button:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 40px rgba(0, 240, 255, 0.6);
             background: #fff;
         }
 
+        /* Stats */
         .stats {
-            margin-top: 5rem;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 2rem;
-            perspective: 1000px;
+            margin-top: 3rem;
         }
 
-        .stat-item {
+        .stat {
             background: var(--glass);
             padding: 2rem;
             border-radius: 20px;
             border: 1px solid var(--border);
             backdrop-filter: blur(10px);
-            transition: transform 0.3s ease;
+            text-align: center;
         }
 
-        .stat-item:hover {
-            transform: translateY(-10px) rotateX(5deg);
-            border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .stat-val {
-            display: block;
+        .stat-value {
             font-size: 2.5rem;
             font-weight: 800;
             color: var(--primary);
@@ -171,6 +270,127 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+
+        /* About & Guide Styles */
+        .content-section {
+            background: var(--glass);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+        }
+
+        .content-section h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .content-section h3 {
+            color: #fff;
+            margin: 1.5rem 0 1rem;
+            font-size: 1.3rem;
+        }
+
+        .content-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-section li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: #a8b2d1;
+        }
+
+        .content-section li::before {
+            content: "▹";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+
+        .content-section p {
+            color: #a8b2d1;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .content-section strong {
+            color: #fff;
+        }
+
+        .content-section code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+        }
+
+        .content-section pre {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 1rem;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .content-section pre code {
+            background: none;
+            padding: 0;
+        }
+
+        /* Guide Steps */
+        .guide-step {
+            display: flex;
+            gap: 2rem;
+            margin: 2rem 0;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            color: var(--bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content h3 {
+            margin-top: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.5rem;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .guide-step {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 
@@ -179,26 +399,209 @@
     <div class="orb"></div>
 
     <div class="container">
-        <h1>PANOPT LITE</h1>
-        <p class="subtitle">AI-Driven Threat Intelligence</p>
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('home')">🏠 Home</button>
+            <button class="tab-btn" onclick="showTab('about')">ℹ️ About</button>
+            <button class="tab-btn" onclick="showTab('guide')">📖 How to Use</button>
+        </div>
 
-        <a href="http://localhost:3000" class="btn">ENTER MISSION CONTROL</a>
+        <!-- Home Tab -->
+        <div id="home" class="tab-content active">
+            <div class="logo-container">
+                <div class="logo">👁️</div>
+                <h1 class="title">PANOPT LITE</h1>
+                <p class="subtitle">Advanced SIEM • AI-Powered Security • Multi-Platform</p>
+            </div>
 
-        <div class="stats">
-            <div class="stat-item">
-                <span class="stat-val">ACTIVE</span>
-                <span class="stat-label">System Status</span>
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>AI Anomaly Detection</h3>
+                    <p>Machine learning powered threat detection using Isolation Forest</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Multi-Platform</h3>
+                    <p>Windows, Linux, Android, iOS agent support</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔔</div>
+                    <h3>Smart Alerts</h3>
+                    <p>Discord, Slack, and mobile push notifications</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Threat Intelligence</h3>
+                    <p>AbuseIPDB integration for malicious IP detection</p>
+                </div>
             </div>
-            <div class="stat-item">
-                <span class="stat-val">SECURE</span>
-                <span class="stat-label">AI Guardrails</span>
+
+            <a href="http://localhost:3000" class="cta-button">
+                <span>ENTER MISSION CONTROL</span>
+                <span class="arrow">→</span>
+            </a>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">∞</div>
+                    <div class="stat-label">Log Retention</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">4</div>
+                    <div class="stat-label">Platforms</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">24/7</div>
+                    <div class="stat-label">Monitoring</div>
+                </div>
             </div>
-            <div class="stat-item">
-                <span class="stat-val">LIVE</span>
-                <span class="stat-label">Data Ingestion</span>
+        </div>
+
+        <!-- About Tab -->
+        <div id="about" class="tab-content">
+            <div class="content-section">
+                <h2>About Panopt Lite</h2>
+
+                <h3>🎯 What is Panopt Lite?</h3>
+                <p>Panopt Lite is a lightweight, self-hosted Security Information and Event Management (SIEM) system
+                    designed for individuals and small teams who want enterprise-grade security monitoring without the
+                    enterprise price tag.</p>
+
+                <h3>🚀 Key Features</h3>
+                <ul>
+                    <li><strong>Real-time Log Ingestion:</strong> Collect logs from multiple sources using Vector</li>
+                    <li><strong>AI-Powered Detection:</strong> Isolation Forest & Linear Regression for anomaly
+                        detection</li>
+                    <li><strong>Threat Intelligence:</strong> Automatic bad IP detection via AbuseIPDB</li>
+                    <li><strong>Beautiful Dashboards:</strong> Grafana-powered Mission Control interface</li>
+                    <li><strong>Multi-Platform Agents:</strong> Windows, Linux, Android, iOS support</li>
+                    <li><strong>Smart Alerting:</strong> Loki Rules + AlertManager with webhook notifications</li>
+                    <li><strong>Privacy First:</strong> 100% self-hosted, your data never leaves your network</li>
+                </ul>
+
+                <h3>🏗️ Architecture</h3>
+                <p><strong>Server Stack:</strong></p>
+                <ul>
+                    <li><strong>Grafana Loki:</strong> Log aggregation and storage</li>
+                    <li><strong>Grafana:</strong> Visualization and dashboards</li>
+                    <li><strong>Vector:</strong> High-performance log shipping</li>
+                    <li><strong>AlertManager:</strong> Alert routing and notifications</li>
+                    <li><strong>Python AI Engine:</strong> Anomaly detection and forecasting</li>
+                </ul>
+
+                <h3>💡 Use Cases</h3>
+                <ul>
+                    <li>Home lab security monitoring</li>
+                    <li>Small business infrastructure monitoring</li>
+                    <li>Personal device fleet management</li>
+                    <li>Learning SIEM concepts and security operations</li>
+                    <li>Privacy-focused alternative to cloud SIEM solutions</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Guide Tab -->
+        <div id="guide" class="tab-content">
+            <div class="content-section">
+                <h2>How to Use Panopt Lite</h2>
+
+                <div class="guide-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Start the Server</h3>
+                        <p>On your central machine (Windows/Linux/Mac):</p>
+                        <pre><code>git clone https://github.com/your-repo/panopt-lite.git
+cd panopt-lite
+docker-compose up -d</code></pre>
+                        <p>Wait 30 seconds for all services to start.</p>
+                    </div>
+                </div>
+
+                <div class="guide-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Access Mission Control</h3>
+                        <p>Open your browser and navigate to:</p>
+                        <pre><code>http://localhost:3000</code></pre>
+                        <p><strong>Login credentials:</strong></p>
+                        <ul>
+                            <li>Username: <code>admin</code></li>
+                            <li>Password: <code>panopt_secure</code></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="guide-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Deploy Windows Agent</h3>
+                        <pre><code>cd windows_agent
+.\start-all.ps1</code></pre>
+                        <p>This starts both Vector (CPU/Memory/Disk) and Network collector.</p>
+                    </div>
+                </div>
+
+                <div class="guide-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Configure Alerts (Optional)</h3>
+                        <p>Enable Discord/Slack notifications:</p>
+                        <ul>
+                            <li>Get webhook URL from Discord/Slack</li>
+                            <li>Edit <code>config/alertmanager/alertmanager.yml</code></li>
+                            <li>Uncomment webhook section and add your URL</li>
+                            <li>Restart: <code>docker-compose restart alertmanager</code></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="guide-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h3>Monitor & Enjoy!</h3>
+                        <p>Your Mission Control dashboard now shows:</p>
+                        <ul>
+                            <li>✅ CPU usage across all devices</li>
+                            <li>✅ Memory consumption</li>
+                            <li>✅ Network traffic (RX/TX)</li>
+                            <li>✅ AI-detected anomalies</li>
+                            <li>✅ Security alerts</li>
+                            <li>✅ Real-time log stream</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>📚 Additional Resources</h3>
+                <ul>
+                    <li><a href="INSTALLATION.md" style="color: var(--primary);">Full Installation Guide</a></li>
+                    <li><a href="PHASE2_SETUP.md" style="color: var(--primary);">Phase 2 Features Setup</a></li>
+                    <li><a href="AGENTS_GUIDE.md" style="color: var(--primary);">Agent Deployment Guide</a></li>
+                    <li><a href="TODO.md" style="color: var(--primary);">TODO & Roadmap</a></li>
+                </ul>
             </div>
         </div>
     </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+
+            // Highlight active button
+            event.target.classList.add('active');
+        }
+    </script>
 </body>
 
 </html>

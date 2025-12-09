@@ -1,6 +1,7 @@
 [sources.host_metrics]
 type = "host_metrics"
 scrape_interval_secs = 10
+collectors = ["cpu", "memory", "disk", "filesystem", "network"]  # Enable network metrics
 
 [transforms.metrics_to_logs]
 type = "metric_to_log"

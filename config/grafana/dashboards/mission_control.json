@@ -144,8 +144,8 @@
                         "uid": "Loki"
                     },
                     "editorMode": "code",
-                    "expr": "sum(rate({job=\"metrics\"} | json | name=\"cpu_seconds_total\" | unwrap counter_value [1m])) * 100",
-                    "legendFormat": "CPU Usage",
+                    "expr": "sum by (source) (rate({job=\"metrics\"} | json | name=\"cpu_seconds_total\" | unwrap counter_value [1m])) * 100",
+                    "legendFormat": "{{source}}",
                     "queryType": "range",
                     "refId": "A"
                 }
@@ -192,8 +192,8 @@
                         "uid": "Loki"
                     },
                     "editorMode": "code",
-                    "expr": "avg_over_time({job=\"metrics\"} | json | name=\"memory_available_bytes\" | unwrap gauge_value [1m])",
-                    "legendFormat": "Memory Available",
+                    "expr": "avg_over_time({job=\"metrics\"} | json | name=\"memory_available_bytes\" | unwrap gauge_value [1m]) by (source)",
+                    "legendFormat": "{{source}}",
                     "queryType": "range",
                     "refId": "A"
                 }
@@ -206,11 +206,72 @@
                 "type": "loki",
                 "uid": "Loki"
             },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Bytes/sec",
+                        "drawStyle": "line",
+                        "lineInterpolation": "smooth",
+                        "fillOpacity": 10
+                    },
+                    "unit": "Bps"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 10,
+                "w": 24,
+                "x": 0,
+                "y": 16
+            },
+            "id": 4,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "showLegend": true
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "Loki"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum by (source) (rate({job=\"metrics\"} | json | name=~\"(?:host_)?network_receive_bytes_total\" | regexp \"\\\"value\\\":(?P<val>\\\\d+(\\\\.\\\\d+)?)\" | unwrap val [1m]))",
+                    "legendFormat": "⬇️ RX {{source}}",
+                    "queryType": "range",
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "Loki"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum by (source) (rate({job=\"metrics\"} | json | name=~\"(?:host_)?network_transmit_bytes_total\" | regexp \"\\\"value\\\":(?P<val>\\\\d+(\\\\.\\\\d+)?)\" | unwrap val [1m])) * -1",
+                    "legendFormat": "⬆️ TX {{source}}",
+                    "queryType": "range",
+                    "refId": "B"
+                }
+            ],
+            "title": "Network Traffic (In/Out)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "Loki"
+            },
             "gridPos": {
                 "h": 12,
                 "w": 24,
                 "x": 0,
-                "y": 16
+                "y": 26
             },
             "id": 2,
             "options": {

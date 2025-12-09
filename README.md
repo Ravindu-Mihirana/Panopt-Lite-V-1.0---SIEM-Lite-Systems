@@ -10,7 +10,17 @@ A lightweight, containerized SIEM system featuring real-time log ingestion, visu
 - **Log Collection**: Vector agent for high-performance log shipping (Windows/Linux support).
 - **Storage**: Grafana Loki (Monolithic mode) for efficient, indexed log storage.
 - **AI Anomaly Detection**: Python-based service using Isolation Forest (Scikit-Learn) to detect outliers in real-time.
+- **Threat Intelligence**: AbuseIPDB integration to flag malicious IPs automatically.
+- **Security Alerting**: Loki Rules + AlertManager with Discord/Slack/Pushover notifications.
+- **Forecasting**: Linear Regression to predict resource exhaustion (disk full, etc.).
 - **Privacy First**: Fully self-hosted Log/SIEM stack.
+
+## 🎯 Phase 2 Features (Advanced)
+- **Mobile Notifications**: Get alerts on your phone via Pushover
+- **Long-Term Storage**: MinIO/S3 integration for infinite log retention
+- **Multi-Platform Agents**: Windows, Linux, Android, iOS support
+
+See [PHASE2_SETUP.md](PHASE2_SETUP.md) for configuration details.
 
 ## 🛠️ Architecture
 - **Vector**: Agent installed on endpoints (e.g., your laptop) -> ships logs/metrics.
@@ -82,6 +92,20 @@ chmod +x install_termux.sh
 ├── docker-compose.yml    # Stack Definition
 └── README.md
 ```
+
+## 📚 Documentation
+
+- **[Complete Installation Guide](INSTALLATION.md)** - Step-by-step setup instructions
+- **[Agent Deployment Guide](AGENTS_GUIDE.md)** - Multi-platform agent installation
+- **[Phase 2 Features](PHASE2_SETUP.md)** - Advanced features setup (Alerts, Threat Intel, Storage)
+- **[Windows Network Collector](windows_agent/NETWORK_COLLECTOR.md)** - Network metrics for Windows
+- **[TODO List](TODO.md)** - Planned features and known issues
+
+## 🆘 Support
+
+- Check [INSTALLATION.md](INSTALLATION.md) for detailed troubleshooting
+- Review [TODO.md](TODO.md) for known issues and roadmap
+- Open a GitHub issue for bugs or feature requests
 
 ## 🛡️ License
 MIT

@@ -1,0 +1,30 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'null'  # Default to null until webhooks are configured
+
+receivers:
+  - name: 'null'  # Accepts alerts but doesn't send notifications
+  
+  # Uncomment and configure when you have webhook URLs:
+  # - name: 'discord-webhook'
+  #   webhook_configs:
+  #     - url: 'YOUR_DISCORD_WEBHOOK_URL'
+  #       send_resolved: true
+  #
+  # - name: 'slack-webhook'
+  #   webhook_configs:
+  #     - url: 'YOUR_SLACK_WEBHOOK_URL'
+  #       send_resolved: true
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'dev', 'instance']

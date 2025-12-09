@@ -55,3 +55,28 @@ services:
     depends_on:
       - loki
     restart: unless-stopped
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: panopt-alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./config/alertmanager:/etc/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    networks:
+      - panopt-net
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: panopt-web
+    ports:
+      - "80:80"
+    volumes:
+      - ./public:/usr/share/nginx/html:ro
+    networks:
+      - panopt-net
+    restart: unless-stopped

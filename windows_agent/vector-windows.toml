@@ -1,6 +1,7 @@
 [sources.host_metrics]
 type = "host_metrics"
 scrape_interval_secs = 10  # Collect every 10 seconds (Very low resource usage)
+collectors = ["cpu", "memory", "disk", "filesystem", "network"]  # Enable network metrics
 
 # Transform: Convert Metric -> Log (so we can see it in Loki)
 [transforms.metrics_to_logs]
